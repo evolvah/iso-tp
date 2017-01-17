@@ -18,18 +18,21 @@ int main(int argc, char const *argv[])
     for (uint i = 0; i < testByteCount; ++i)
         data[i] = i;
 
-    IsoTpBuffer                 txBuffer;
-    IsoTpBuffer                 rxBuffer;
-    CanBusSenderFrameForwarder  frameForwarder(rxBuffer);
+    // Set up the frame forwarder to send frames back to the buffer
+    // object, using its RX functionality
+    IsoTpBuffer                 isoTpBuffer;
+    CanBusSenderFrameForwarder  frameForwarder(isoTpBuffer);
 
-    txBuffer.TransmitMessage(data, testByteCount, frameForwarder);
+    // Loopback transmission
+    isoTpBuffer.TransmitMessage(data, testByteCount, frameForwarder);
 
     // Let's see what we received
     printf("Dumping the rxBuffer...\n");
-    rxBuffer.ShowRxBuffer();
+    isoTpBuffer.ShowRxBuffer();
 
+    // Verify what we actually received
     byte    rxData[1000];
-    uint rxByteCount = rxBuffer.FetchMessage(rxData, 1000);
+    uint rxByteCount = isoTpBuffer.FetchMessage(rxData, 1000);
     printf("Received %u bytes, verifying against the transmitted data\n", rxByteCount);
     for(uint i = 0; i < rxByteCount; ++i)
         assert(data[i] == rxData[i]);
