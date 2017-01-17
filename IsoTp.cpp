@@ -11,11 +11,7 @@ public:
     CanBusSender() {};
     ~CanBusSender() {};
     
-    void SendFrame(const CanBusFrame& frame) {
-        printf("Sending %u bytes:", dataLen);
-        for (uint i = 0; i < dataLen; ++i)
-            printf(" %02x", dataAddr[i]);
-        printf("\n");
+    void SendFrame(byte* data, uint len) {
     };
 };
 
@@ -59,7 +55,12 @@ public:
         memcpy(buff+1, dataAddr, bytesToStore);
     }
 
-    void Print() {
+    void SendViaSender(CanBusSender& sender) {
+        Print();
+        sender.SendFrame(buff, MAX_FRAME_PAYLOAD);
+    }
+
+    void Print() const {
         printf("CanBusFrame @ %p :", this);
         for (uint i = 0; i < MAX_FRAME_PAYLOAD; ++i)
             printf(" %02x", buff[i]);
@@ -73,17 +74,17 @@ class IsoTp
 
     void SendSingleFrame(byte* dataAddr, uint dataLen, CanBusSender& sender) {
         frame.DecorateAsSingleFrame(dataAddr, dataLen);
-        frame.Print();
+        frame.SendViaSender(sender);
     }
 
     void SendFirstFrame(byte* dataAddr, uint dataLen, CanBusSender& sender) {
         frame.DecorateAsFirstFrame(dataAddr, dataLen);
-        frame.Print();
+        frame.SendViaSender(sender);
     }
 
     void SendConsecutiveFrame(byte* dataAddr, uint dataLen, CanBusSender& sender) {
         frame.DecorateAsConsecutiveFrame(dataAddr, dataLen, 1);
-        frame.Print();
+        frame.SendViaSender(sender);
     }
 
 public:
