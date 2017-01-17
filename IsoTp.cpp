@@ -90,6 +90,7 @@ class IsoTp
 public:
     IsoTp() {};
     ~IsoTp() {};
+
     void SendMessage(byte* dataAddr, uint dataLen, CanBusSender& sender) {
         if (dataLen > CanBusFrame::MAX_SINGLE_FRAME) {
             // Multi Frame mode
