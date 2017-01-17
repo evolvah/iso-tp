@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
-#include "CanBusBuffer.h"
+#include "IsoTpBuffer.h"
+#include "CanBusSenderFramePrinter.h"
+#include "CanBusSenderFrameForwarder.h"
 
 int main(int argc, char const *argv[])
 {
@@ -15,11 +18,22 @@ int main(int argc, char const *argv[])
     for (uint i = 0; i < testByteCount; ++i)
         data[i] = i;
 
-    CanBusBuffer cbb;
+    IsoTpBuffer                 txBuffer;
+    IsoTpBuffer                 rxBuffer;
+    CanBusSenderFrameForwarder  frameForwarder(rxBuffer);
 
-    cbb.EncodeMessage(data, testByteCount);
+    txBuffer.TransmitMessage(data, testByteCount, frameForwarder);
 
-    cbb.Show();
+    // Let's see what we received
+    printf("Dumping the rxBuffer...\n");
+    rxBuffer.ShowRxBuffer();
+
+    byte    rxData[1000];
+    uint rxByteCount = rxBuffer.FetchMessage(rxData, 1000);
+    printf("Received %u bytes, verifying against the transmitted data\n", rxByteCount);
+    for(uint i = 0; i < rxByteCount; ++i)
+        assert(data[i] == rxData[i]);
+    printf("All good...\n");
 
     return 0;
 }
